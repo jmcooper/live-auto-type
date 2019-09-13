@@ -38,24 +38,25 @@ function activate(context) {
 		let textToPrint = context.workspaceState.get('liveAutoType.command1')
 		let autoPairHistory = []
 		let cumulativeDelay = 0
+		let secondPass = false
 
 		for (let i = 0; i < textToPrint.length; i++) {
 			cumulativeDelay += getRandomInt(10, 200)
 			setTimeout(() => printNextChar(i), cumulativeDelay)
 		}
 		function printNextChar(charIndex) {
+			let charToPrint = textToPrint.charAt(charIndex)
 			let moveCursorForward = false
 			let addCharacterPair = false
-			let charToPrint = textToPrint.charAt(charIndex)
-			let c = false
 
-			if (charToPrint === "'" && c) {
+			if (charToPrint === "'" && secondPass) {
 				let foo = 'foo'
 			}
 			if (charToPrint === "'") {
-				c = true
+				secondPass = true
 			}
 			if (autoPairHistory[autoPairHistory.length - 1] === charToPrint) {
+				let position = vscode.window.activeTextEditor.selection.active;
 				let newPosition = position.with(position.line, position.character + 1)
 				vscode.window.activeTextEditor.selection = new vscode.Selection(newPosition, newPosition);
 				autoPairHistory.pop()
