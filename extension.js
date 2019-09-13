@@ -9,6 +9,12 @@ const vscode = require('vscode');
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
+	const autoPairCharacters = {
+		"'": "'",
+		"{": "}",
+		"(": ")",
+
+	}
 	function getRandomInt(min, max) {
 		min = Math.ceil(min);
 		max = Math.floor(max);
@@ -30,36 +36,59 @@ function activate(context) {
 
 	let printCode1Command = vscode.commands.registerCommand('extension.liveAutoType.printCode1', function () {
 		let textToPrint = context.workspaceState.get('liveAutoType.command1')
+		let autoPairHistory = []
 		let cumulativeDelay = 0
-		for (let i=0; i < textToPrint.length; i++) {
-			cumulativeDelay += getRandomInt(10,200)
+
+		for (let i = 0; i < textToPrint.length; i++) {
+			cumulativeDelay += getRandomInt(10, 200)
 			setTimeout(() => printNextChar(i), cumulativeDelay)
 		}
 		function printNextChar(charIndex) {
+			let moveCursorForward = false
+			let addCharacterPair = false
 			let charToPrint = textToPrint.charAt(charIndex)
+			let c = false
+
+			if (charToPrint === "'" && c) {
+				let foo = 'foo'
+			}
+			if (charToPrint === "'") {
+				c = true
+			}
+			if (autoPairHistory[autoPairHistory.length - 1] === charToPrint) {
+				let newPosition = position.with(position.line, position.character + 1)
+				vscode.window.activeTextEditor.selection = new vscode.Selection(newPosition, newPosition);
+				autoPairHistory.pop()
+				moveCursorForward = true
+				return
+			}
+
+			if (autoPairCharacters.hasOwnProperty(charToPrint))
+				addCharacterPair = true
+
 			vscode.window.activeTextEditor.edit(editBuilder => {
 				let position = vscode.window.activeTextEditor.selection.active;
 				if (charToPrint !== '\n')
 					editBuilder.insert(position, textToPrint.charAt(charIndex));
-				position = vscode.window.activeTextEditor.selection.active;
 			}).then(() => {
-				if (charToPrint === "'") {
+				if (addCharacterPair) {
+					autoPairHistory.push(autoPairCharacters[charToPrint])
 					vscode.window.activeTextEditor.edit(editBuilder => {
 						let position = vscode.window.activeTextEditor.selection.active;
-						editBuilder.insert(position, charToPrint);
+						editBuilder.insert(position, autoPairCharacters[charToPrint]);
+						addCharacterPair = false
+					}).then(() => {
+						let position = vscode.window.activeTextEditor.selection.active;
+						let newPosition = position.with(position.line, position.character - 1);
+						vscode.window.activeTextEditor.selection = new vscode.Selection(newPosition, newPosition);
 					})
-					// try {
-					// 	let newPosition = position.with(position.line, position.character - 1)
-					// 	vscode.window.activeTextEditor.selection = new vscode.Selection(newPosition, newPosition);
-					// } catch(err) {
-					// 	let message  = err.message
-					// }
 				}
 			}).then(() => {
-				if (charToPrint === "'") {
+				if (moveCursorForward) {
 					let position = vscode.window.activeTextEditor.selection.active;
-					let newPosition = position.with(position.line, position.character)
+					let newPosition = position.with(position.line, position.character + 2);
 					vscode.window.activeTextEditor.selection = new vscode.Selection(newPosition, newPosition);
+					moveCursorForward = false;
 				}
 			})
 
@@ -72,7 +101,7 @@ function activate(context) {
 exports.activate = activate;
 
 // this method is called when your extension is deactivated
-function deactivate() {}
+function deactivate() { }
 
 module.exports = {
 	activate,
