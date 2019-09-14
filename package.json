@@ -3,7 +3,7 @@
 	"displayName": "live-auto-type",
 	"publisher": "jimcooper",
 	"description": "Auto type code the clipboard for live coding presentations.",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"engines": {
 		"vscode": "^1.38.0"
 	},
