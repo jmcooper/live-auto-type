@@ -10,8 +10,12 @@ Live Auto Type can be used for live coding presentations to replay a series of c
 4. Log Entire Code Blocks History (displays in output window)
 
 
-### 0.3.0
+### 0.4.0
 
 Initial release.
+
+### 0.6.0
+
+Add navigations commands to move forward/backward in codeblocks history
 
 -----------------------------------------------------------------------------------------------------------
