@@ -15,7 +15,9 @@
 		"onCommand:extension.liveAutoType.appendCodeFromClipBoard",
 		"onCommand:extension.liveAutoType.printNextCodeBlock",
 		"onCommand:extension.liveAutoType.codeblocks",
-		"onCommand:extension.liveAutoType.logEntireCodeblocksHistory"
+		"onCommand:extension.liveAutoType.logEntireCodeblocksHistory",
+		"onCommand:extension.liveAutoType.moveBackOneCodeblock",
+		"onCommand:extension.liveAutoType.skipToNextCodeblock"
 	],
 	"main": "./extension.js",
 	"contributes": {
@@ -35,6 +37,14 @@
 			{
 				"command": "extension.liveAutoType.logEntireCodeblocksHistory",
 				"title": "Live Auto Type: Log Entire Code Blocks History"
+			},
+			{
+				"command": "extension.liveAutoType.moveBackOneCodeblock",
+				"title": "Live Auto Type: Move Back One Codeblock"
+			},
+			{
+				"command": "extension.liveAutoType.skipToNextCodeblock",
+				"title": "Live Auto Type: Skip To Next Codeblock"
 			}
 		]
 	},

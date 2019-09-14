@@ -111,7 +111,6 @@ function activate(context) {
 			outputChannel.appendLine('There are no queued code blocks.');
 			return outputChannel.show();
 		}
-		try {
 
 		codeblocks.forEach((codeblock, i) => {
 			let delimiter =  i === codeblockIndex ? 
@@ -125,15 +124,30 @@ function activate(context) {
 			outputChannel.appendLine('');
 		});
 		outputChannel.show();
-	} catch(err) {
-		console.log(err)
-	}
+	});
+
+	let moveBackOneCodeblockCommand = vscode.commands.registerCommand('extension.liveAutoType.moveBackOneCodeblock', function () {
+		let codeblockIndex = context.workspaceState.get('liveAutoType.codeblockIndex') || 0
+		if (codeblockIndex === 0) return
+		context.workspaceState.update('liveAutoType.codeblockIndex', codeblockIndex - 1);
+	});
+
+	let skipToNextCodeblockCommand = vscode.commands.registerCommand('extension.liveAutoType.skipToNextCodeblock', function () {
+		let codeblockIndex = context.workspaceState.get('liveAutoType.codeblockIndex') || 0
+		let codeblocks = context.workspaceState.get('liveAutoType.codeblocks') || [];
+
+		if (codeblockIndex === codeblocks.length-1) return
+
+		context.workspaceState.update('liveAutoType.codeblockIndex', codeblockIndex + 1);
 	});
 
 	context.subscriptions.push(appendCodeFromClipBoardCommand);
 	context.subscriptions.push(printNextCodeBlockCommand);
 	context.subscriptions.push(logRemainingCodeblocksCommand);
 	context.subscriptions.push(logEntireCodeblocksHistoryCommand);
+	context.subscriptions.push(moveBackOneCodeblockCommand);
+	context.subscriptions.push(skipToNextCodeblockCommand);
+
 }
 exports.activate = activate;
 
