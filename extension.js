@@ -34,6 +34,9 @@ function activate(context) {
 		let codeblocks = context.workspaceState.get('liveAutoType.codeblocks') || [];
 		let nextTextToPrint = codeblocks[codeblockIndex];
 
+		if (!nextTextToPrint)
+			return
+			
 		context.workspaceState.update('liveAutoType.codeblocks', codeblocks);
 		context.workspaceState.update('liveAutoType.codeblockIndex', codeblockIndex + 1);
 
