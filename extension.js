@@ -1,107 +1,142 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-
-/**
- * @param {vscode.ExtensionContext} context
- */
 function activate(context) {
+	context.workspaceState.update('liveAutoType.codeblocks', []);
+	context.workspaceState.update('liveAutoType.codeblockIndex', 0);
+
 	const autoPairCharacters = {
 		"'": "'",
+		'"': '"',
+		'`': '`',
 		"{": "}",
 		"(": ")",
+		"[": "]",
+	};
 
-	}
 	function getRandomInt(min, max) {
 		min = Math.ceil(min);
 		max = Math.floor(max);
-		return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+		return Math.floor(Math.random() * (max - min)) + min;
 	}
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "live-auto-type" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	let registerCode1Command = vscode.commands.registerCommand('extension.liveAutoType.registerCode1FromClipBoard', function () {
+	let appendCodeFromClipBoardCommand = vscode.commands.registerCommand('extension.liveAutoType.appendCodeFromClipBoard', function () {
 		vscode.env.clipboard.readText().then((text) => {
-			context.workspaceState.update('liveAutoType.command1', text)
+			let codeblocks = context.workspaceState.get('liveAutoType.codeblocks') || [];
+			codeblocks.push(text);
+			context.workspaceState.update('liveAutoType.codeblocks', codeblocks);
 		});
 	});
 
-	let printCode1Command = vscode.commands.registerCommand('extension.liveAutoType.printCode1', function () {
-		let textToPrint = context.workspaceState.get('liveAutoType.command1')
-		let autoPairHistory = []
-		let cumulativeDelay = 0
-		let secondPass = false
+	let printNextCodeBlockCommand = vscode.commands.registerCommand('extension.liveAutoType.printNextCodeBlock', function () {
+		let autoPairHistory = [];
+		let cumulativeDelay = 0;
+		let codeblockIndex = context.workspaceState.get('liveAutoType.codeblockIndex') || 0
+		let codeblocks = context.workspaceState.get('liveAutoType.codeblocks') || [];
+		let nextTextToPrint = codeblocks[codeblockIndex];
 
-		for (let i = 0; i < textToPrint.length; i++) {
-			cumulativeDelay += getRandomInt(10, 200)
-			setTimeout(() => printNextChar(i), cumulativeDelay)
+		context.workspaceState.update('liveAutoType.codeblocks', codeblocks);
+		context.workspaceState.update('liveAutoType.codeblockIndex', codeblockIndex + 1);
+
+		for (let i = 0; i < nextTextToPrint.length; i++) {
+			let randomDelay = getRandomInt(50, 200);
+			if (randomDelay > 210) randomDelay += 500;
+
+			cumulativeDelay += randomDelay;
+			setTimeout(() => printNextChar(i), cumulativeDelay);
 		}
 		function printNextChar(charIndex) {
-			let charToPrint = textToPrint.charAt(charIndex)
-			let moveCursorForward = false
-			let addCharacterPair = false
+			let charToPrint = nextTextToPrint.charAt(charIndex);
 
-			if (charToPrint === "'" && secondPass) {
-				let foo = 'foo'
-			}
-			if (charToPrint === "'") {
-				secondPass = true
-			}
 			if (autoPairHistory[autoPairHistory.length - 1] === charToPrint) {
 				let position = vscode.window.activeTextEditor.selection.active;
-				let newPosition = position.with(position.line, position.character + 1)
+				let newPosition = position.with(position.line, position.character + 1);
 				vscode.window.activeTextEditor.selection = new vscode.Selection(newPosition, newPosition);
-				autoPairHistory.pop()
-				moveCursorForward = true
+				autoPairHistory.pop();
 				return
 			}
-
-			if (autoPairCharacters.hasOwnProperty(charToPrint))
-				addCharacterPair = true
 
 			vscode.window.activeTextEditor.edit(editBuilder => {
 				let position = vscode.window.activeTextEditor.selection.active;
 				if (charToPrint !== '\n')
-					editBuilder.insert(position, textToPrint.charAt(charIndex));
+					editBuilder.insert(position, nextTextToPrint.charAt(charIndex));
 			}).then(() => {
-				if (addCharacterPair) {
-					autoPairHistory.push(autoPairCharacters[charToPrint])
+				if (autoPairCharacters.hasOwnProperty(charToPrint)) {
+					autoPairHistory.push(autoPairCharacters[charToPrint]);
+					
 					vscode.window.activeTextEditor.edit(editBuilder => {
 						let position = vscode.window.activeTextEditor.selection.active;
 						editBuilder.insert(position, autoPairCharacters[charToPrint]);
-						addCharacterPair = false
+						addCharacterPair = false;
 					}).then(() => {
 						let position = vscode.window.activeTextEditor.selection.active;
 						let newPosition = position.with(position.line, position.character - 1);
 						vscode.window.activeTextEditor.selection = new vscode.Selection(newPosition, newPosition);
 					})
 				}
-			}).then(() => {
-				if (moveCursorForward) {
-					let position = vscode.window.activeTextEditor.selection.active;
-					let newPosition = position.with(position.line, position.character + 2);
-					vscode.window.activeTextEditor.selection = new vscode.Selection(newPosition, newPosition);
-					moveCursorForward = false;
-				}
 			})
-
 		}
 	});
 
-	context.subscriptions.push(registerCode1Command);
-	context.subscriptions.push(printCode1Command);
+	let logRemainingCodeblocksCommand = vscode.commands.registerCommand('extension.liveAutoType.logRemainingCodeblocks', function () {
+		let codeblocks = context.workspaceState.get('liveAutoType.codeblocks') || [];
+		let codeblockIndex = context.workspaceState.get('liveAutoType.codeblockIndex') || 0
+
+		if (codeblocks.length === 0)
+			return console.log('There are no queued code blocks.')
+		
+		let outputChannel = vscode.window.createOutputChannel("Remaining Codeblocks")
+		outputChannel.clear();
+		for (let i = codeblockIndex; i < codeblocks.length; i++) {
+			let delimiter =  i === 0 ? 
+				'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' :
+				'-----------------------------------------------------------';
+
+			outputChannel.appendLine('');
+			outputChannel.appendLine(delimiter)
+			outputChannel.appendLine(codeblocks[i]);
+			outputChannel.appendLine(delimiter)
+			outputChannel.appendLine('');
+		}
+		outputChannel.show();
+	});
+
+	let logEntireCodeblocksHistoryCommand = vscode.commands.registerCommand('extension.liveAutoType.logEntireCodeblocksHistory', function () {
+		let codeblocks = context.workspaceState.get('liveAutoType.codeblocks') || [];
+		let codeblockIndex = context.workspaceState.get('liveAutoType.codeblockIndex') || 0;
+
+		let outputChannel = vscode.window.createOutputChannel("Entire Codeblocks History");
+		outputChannel.clear();
+
+		if (codeblocks.length === 0) {
+			outputChannel.appendLine('There are no queued code blocks.');
+			return outputChannel.show();
+		}
+		try {
+
+		codeblocks.forEach((codeblock, i) => {
+			let delimiter =  i === codeblockIndex ? 
+				'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' :
+				'-----------------------------------------------------------';
+			
+			outputChannel.appendLine('');
+			outputChannel.appendLine(delimiter);
+			outputChannel.appendLine(codeblock);
+			outputChannel.appendLine(delimiter);
+			outputChannel.appendLine('');
+		});
+		outputChannel.show();
+	} catch(err) {
+		console.log(err)
+	}
+	});
+
+	context.subscriptions.push(appendCodeFromClipBoardCommand);
+	context.subscriptions.push(printNextCodeBlockCommand);
+	context.subscriptions.push(logRemainingCodeblocksCommand);
+	context.subscriptions.push(logEntireCodeblocksHistoryCommand);
 }
 exports.activate = activate;
 
-// this method is called when your extension is deactivated
 function deactivate() { }
 
 module.exports = {

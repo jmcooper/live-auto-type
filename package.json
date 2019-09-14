@@ -10,18 +10,30 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.liveAutoType.registerCode1FromClipBoard"
+		"onCommand:extension.liveAutoType.appendCodeFromClipBoard",
+		"onCommand:extension.liveAutoType.printNextCodeBlock",
+		"onCommand:extension.liveAutoType.codeblocks",
+		"onCommand:extension.liveAutoType.logEntireCodeblocksHistory"
+
 	],
 	"main": "./extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.liveAutoType.registerCode1FromClipBoard",
-				"title": "Live Auto Type: Register Command 1 From Clipboard"
+				"command": "extension.liveAutoType.appendCodeFromClipBoard",
+				"title": "Live Auto Type: Append Code Block from Clipboard"
 			},
 			{
-				"command": "extension.liveAutoType.printCode1",
-				"title": "Live Auto Type: Print Command 1"
+				"command": "extension.liveAutoType.printNextCodeBlock",
+				"title": "Live Auto Type: Print Next Code Block"
+			},
+			{
+				"command": "extension.liveAutoType.logRemainingCodeblocks",
+				"title": "Live Auto Type: Log Remaining Code Blocks"
+			},
+			{
+				"command": "extension.liveAutoType.logEntireCodeblocksHistory",
+				"title": "Live Auto Type: Log Entire Code Blocks History"
 			}
 		]
 	},
