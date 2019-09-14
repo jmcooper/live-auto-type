@@ -2,7 +2,7 @@
 	"name": "live-auto-type",
 	"displayName": "live-auto-type",
 	"description": "Auto type code the clipboard for live coding presentations.",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"engines": {
 		"vscode": "^1.38.0"
 	},
@@ -14,7 +14,6 @@
 		"onCommand:extension.liveAutoType.printNextCodeBlock",
 		"onCommand:extension.liveAutoType.codeblocks",
 		"onCommand:extension.liveAutoType.logEntireCodeblocksHistory"
-
 	],
 	"main": "./extension.js",
 	"contributes": {
