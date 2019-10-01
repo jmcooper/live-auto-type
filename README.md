@@ -1,6 +1,6 @@
 # live-auto-type README
 
-Live Auto Type can be used for live coding presentations to replay a series of code blocks one at a time. By copying codeblocks into a buffer fromt he clipboard you can then replay each code block and it will type each one in the editor.
+Live Auto Type can be used for live coding presentations to replay a series of code blocks one at a time. By copying codeblocks into a buffer from the clipboard you can then replay each code block and it will type each one in the editor.
 
 ## Features
 
