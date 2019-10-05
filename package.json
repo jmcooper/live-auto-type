@@ -4,7 +4,7 @@
 	"publisher": "jimcooper",
 	"repository": "https://github.com/jmcooper/live-auto-type",
 	"description": "Auto type code the clipboard for live coding presentations.",
-	"version": "0.7.0",
+	"version": "0.8.0",
 	"engines": {
 		"vscode": "^1.38.0"
 	},
