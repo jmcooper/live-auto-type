@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const vscode = require('vscode');
 
 function activate(context) {
@@ -24,6 +26,7 @@ function activate(context) {
 			let codeblocks = context.workspaceState.get('liveAutoType.codeblocks') || [];
 			codeblocks.push(text);
 			context.workspaceState.update('liveAutoType.codeblocks', codeblocks);
+			logOutputToFileIfNecessary();
 		});
 	});
 
@@ -36,6 +39,7 @@ function activate(context) {
 
 		context.workspaceState.update('liveAutoType.codeblocks', codeblocks);
 		context.workspaceState.update('liveAutoType.codeblockIndex', codeblockIndex + 1);
+		logOutputToFileIfNecessary();
 
 		for (let i = 0; i < nextTextToPrint.length; i++) {
 			let randomDelay = getRandomInt(50, 200);
@@ -77,27 +81,48 @@ function activate(context) {
 		}
 	});
 
-	let logRemainingCodeblocksCommand = vscode.commands.registerCommand('extension.liveAutoType.logRemainingCodeblocks', function () {
+	function getRemainingCodeblocks() {
 		let codeblocks = context.workspaceState.get('liveAutoType.codeblocks') || [];
-		let codeblockIndex = context.workspaceState.get('liveAutoType.codeblockIndex') || 0
+		let codeblockIndex = context.workspaceState.get('liveAutoType.codeblockIndex') || 0;
 
 		if (codeblocks.length === 0)
-			return console.log('There are no queued code blocks.')
-		
-		let outputChannel = vscode.window.createOutputChannel("Remaining Codeblocks")
-		outputChannel.clear();
+			return 'There are no queued code blocks.\n';
+
+		let output = '';
+		let cnt = 0;
 		for (let i = codeblockIndex; i < codeblocks.length; i++) {
-			let delimiter =  i === 0 ? 
+			let delimiter =  cnt === 0 ? 
 				'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' :
 				'-----------------------------------------------------------';
-
-			outputChannel.appendLine('');
-			outputChannel.appendLine(delimiter)
-			outputChannel.appendLine(codeblocks[i]);
-			outputChannel.appendLine(delimiter)
-			outputChannel.appendLine('');
+			output += '\n' + delimiter + '\n' + codeblocks[i] + '\n' + delimiter + '\n';
+			cnt++;
 		}
+		return output;
+	}
+
+	function logOutputToFileIfNecessary(outputToLog) {
+		try {
+			let logFilePath = context.workspaceState.get('liveAutoType.logFilePath');
+			if (!logFilePath) 
+				return
+
+			let output = '\n\n\n' + (outputToLog ? outputToLog : getRemainingCodeblocks());
+
+			if (logFilePath) {
+				fs.writeFileSync(logFilePath, output);
+			}
+		} catch(err) {
+			console.error(err);
+		}
+	}
+
+	let logRemainingCodeblocksCommand = vscode.commands.registerCommand('extension.liveAutoType.logRemainingCodeblocks', function () {
+		let outputChannel = vscode.window.createOutputChannel("Remaining Codeblocks")
+		outputChannel.clear();
+		let output = getRemainingCodeblocks();
+		outputChannel.append(output);
 		outputChannel.show();
+		logOutputToFileIfNecessary(output);
 	});
 
 	let logEntireCodeblocksHistoryCommand = vscode.commands.registerCommand('extension.liveAutoType.logEntireCodeblocksHistory', function () {
@@ -126,10 +151,17 @@ function activate(context) {
 		outputChannel.show();
 	});
 
+	let copyLogFilePathFromClipboardCommand = vscode.commands.registerCommand('extension.liveAutoType.copyLogFilePathFromClipboardCommand', function ()  {
+		vscode.env.clipboard.readText().then((text) => {
+			context.workspaceState.update('liveAutoType.logFilePath', text);
+		})
+	});
+
 	let moveBackOneCodeblockCommand = vscode.commands.registerCommand('extension.liveAutoType.moveBackOneCodeblock', function () {
 		let codeblockIndex = context.workspaceState.get('liveAutoType.codeblockIndex') || 0
 		if (codeblockIndex === 0) return
 		context.workspaceState.update('liveAutoType.codeblockIndex', codeblockIndex - 1);
+		logOutputToFileIfNecessary();
 	});
 
 	let skipToNextCodeblockCommand = vscode.commands.registerCommand('extension.liveAutoType.skipToNextCodeblock', function () {
@@ -139,6 +171,7 @@ function activate(context) {
 		if (codeblockIndex === codeblocks.length-1) return
 
 		context.workspaceState.update('liveAutoType.codeblockIndex', codeblockIndex + 1);
+		logOutputToFileIfNecessary();
 	});
 
 	context.subscriptions.push(appendCodeFromClipBoardCommand);
@@ -147,6 +180,7 @@ function activate(context) {
 	context.subscriptions.push(logEntireCodeblocksHistoryCommand);
 	context.subscriptions.push(moveBackOneCodeblockCommand);
 	context.subscriptions.push(skipToNextCodeblockCommand);
+	context.subscriptions.push(copyLogFilePathFromClipboardCommand);
 
 }
 exports.activate = activate;

@@ -17,7 +17,8 @@
 		"onCommand:extension.liveAutoType.codeblocks",
 		"onCommand:extension.liveAutoType.logEntireCodeblocksHistory",
 		"onCommand:extension.liveAutoType.moveBackOneCodeblock",
-		"onCommand:extension.liveAutoType.skipToNextCodeblock"
+		"onCommand:extension.liveAutoType.skipToNextCodeblock",
+		"onCommand:extension.liveAutoType.copyLogFilePathFromClipboardCommand"
 	],
 	"main": "./extension.js",
 	"contributes": {
@@ -37,6 +38,10 @@
 			{
 				"command": "extension.liveAutoType.logEntireCodeblocksHistory",
 				"title": "Live Auto Type: Log Entire Code Blocks History"
+			},
+			{
+				"command": "extension.liveAutoType.copyLogFilePathFromClipboardCommand",
+				"title": "Live Auto Type: Copy Log File Path From Clipboard (Optional)"
 			},
 			{
 				"command": "extension.liveAutoType.moveBackOneCodeblock",
