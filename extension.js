@@ -109,7 +109,7 @@ function activate(context) {
 			if (!logFilePath) 
 				return
 
-			let output = '\n\n\n' + (outputToLog ? outputToLog : getRemainingCodeblocks());
+			let output = outputToLog ? outputToLog : getRemainingCodeblocks();
 
 			if (logFilePath) {
 				fs.writeFileSync(logFilePath, output);
@@ -157,7 +157,8 @@ function activate(context) {
 	let copyLogFilePathFromClipboardCommand = vscode.commands.registerCommand('extension.liveAutoType.copyLogFilePathFromClipboardCommand', function ()  {
 		vscode.env.clipboard.readText().then((text) => {
 			context.workspaceState.update('liveAutoType.logFilePath', text);
-		})
+		});
+		logOutputToFileIfNecessary();
 	});
 
 	let moveBackOneCodeblockCommand = vscode.commands.registerCommand('extension.liveAutoType.moveBackOneCodeblock', function () {
