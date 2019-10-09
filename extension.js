@@ -67,11 +67,11 @@ function activate(context) {
 				if (charToPrint !== '\n')
 					editBuilder.insert(position, nextTextToPrint.charAt(charIndex));
 			}).then(() => {
+				let position = vscode.window.activeTextEditor.selection.active;
 				if (autoPairCharacters.hasOwnProperty(charToPrint)) {
 					autoPairHistory.push(autoPairCharacters[charToPrint]);
 					
 					vscode.window.activeTextEditor.edit(editBuilder => {
-						let position = vscode.window.activeTextEditor.selection.active;
 						editBuilder.insert(position, autoPairCharacters[charToPrint]);
 						addCharacterPair = false;
 					}).then(() => {
@@ -80,6 +80,7 @@ function activate(context) {
 						vscode.window.activeTextEditor.selection = new vscode.Selection(newPosition, newPosition);
 					})
 				}
+				vscode.window.activeTextEditor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.Default);
 			})
 		}
 	});
